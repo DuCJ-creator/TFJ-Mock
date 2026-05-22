@@ -666,10 +666,14 @@ TESTS.forEach(t => {
     const audioBar = s.hasAudio ? `
       <div class="audio-bar">
         <label>🎧 Audio:</label>
-        <audio id="audio-${tk}" controls preload="none" style="flex:1;height:36px;">
-          Your browser does not support audio.
+        <audio id="audio-${tk}" controls preload="metadata" style="flex:1;height:36px;"
+          onerror="this.style.display='none';document.getElementById('audio-fallback-${tk}').style.display='inline-flex';">
         </audio>
-        <a href="${audioUrl}" style="font-size:12px;font-weight:700;color:#6d28d9;text-decoration:none;white-space:nowrap;" target="_blank" rel="noopener">⬇ Download</a>
+        <span id="audio-fallback-${tk}" style="display:none;align-items:center;gap:6px;flex:1;">
+          <span style="font-size:12px;color:#c0392b;font-weight:700;">⚠ Cannot stream —</span>
+          <a href="${audioUrl}" target="_blank" rel="noopener" style="font-size:13px;font-weight:700;color:#6d28d9;">🎵 Open audio in browser</a>
+        </span>
+        <a href="${audioUrl}" style="font-size:12px;font-weight:700;color:#6d28d9;text-decoration:none;white-space:nowrap;padding:6px 12px;background:#ede9fe;border-radius:50px;" target="_blank" rel="noopener">⬇ Download MP3</a>
       </div>` : '';
 
     // Build answer rows
@@ -730,12 +734,13 @@ TESTS.forEach(t => {
   panel.innerHTML = navHtml + sectionsHtml;
   document.querySelector('body').appendChild(panel);
 
-  // Set audio src via JS after DOM insertion so browser loads it properly
-  const audioEl = document.getElementById(`audio-T${t}L`);
-  if (audioEl) {
-    audioEl.src = `${BASE}T${t}L.mp3`;
-    audioEl.load();
-  }
+  // Set audio src after DOM insertion — must happen after appendChild
+  setTimeout(() => {
+    const audioEl = document.getElementById('audio-T' + t + 'L');
+    if (audioEl) {
+      audioEl.setAttribute('src', BASE + 'T' + t + 'L.mp3');
+    }
+  }, 0);
 
   // Init section state
   currentSection[t] = 'L';
