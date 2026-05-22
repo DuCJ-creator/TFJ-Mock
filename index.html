@@ -206,6 +206,7 @@
     border-right: 2px solid #f0f0f0;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
   .pdf-embed-wrap {
     flex: 1;
@@ -446,6 +447,75 @@
   .answer-scroll::-webkit-scrollbar { width: 6px; }
   .answer-scroll::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 3px; }
   .answer-scroll::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 3px; }
+
+  /* ── NOTES PANEL ── */
+  .notes-panel {
+    border-top: 2px solid #f0ece8;
+    background: #fffdf7;
+    padding: 10px 14px 14px;
+  }
+  .notes-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 800;
+    font-size: 13px;
+    color: #b7791f;
+    background: none;
+    border: none;
+    padding: 0;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 8px;
+  }
+  .notes-toggle .arrow { transition: transform 0.2s; font-style: normal; }
+  .notes-toggle.open .arrow { transform: rotate(90deg); }
+  .notes-body { display: none; }
+  .notes-body.open { display: block; }
+  .notes-textarea {
+    width: 100%;
+    min-height: 110px;
+    border: 2px solid #fde68a;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    color: #78350f;
+    background: #fffbeb;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.6;
+  }
+  .notes-textarea:focus { border-color: #f59e0b; }
+  .notes-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+  }
+  .notes-saved {
+    font-size: 11px;
+    color: #a0a0a0;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .notes-saved.show { opacity: 1; }
+  .notes-clear {
+    font-size: 11px;
+    font-weight: 700;
+    color: #ef4444;
+    background: #fee2e2;
+    border: none;
+    border-radius: 50px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .notes-clear:hover { background: #fca5a5; }
+
 </style>
 </head>
 <body>
@@ -661,18 +731,15 @@ TESTS.forEach(t => {
   SECTIONS.forEach((s, si) => {
     const tk = `T${t}${s.key}`;
     const pdfUrl = `${BASE}${tk}.pdf`;
-    const audioUrl = `https://raw.githubusercontent.com/DuCJ-creator/TFJ-Mock/main/T${t}L.mp3`;
+    const audioUrl = `https://ducj-creator.github.io/TFJ-Mock/T${t}L.mp3`;
 
     const audioBar = s.hasAudio ? `
       <div class="audio-bar">
         <label>🎧 Audio:</label>
-        <audio id="audio-${tk}" controls preload="metadata" style="flex:1;height:36px;"
-          onerror="this.style.display='none';document.getElementById('audio-fallback-${tk}').style.display='inline-flex';">
+        <audio controls preload="none" style="flex:1;height:36px;">
+          <source src="${audioUrl}" type="audio/mpeg">
+          <source src="https://raw.githubusercontent.com/DuCJ-creator/TFJ-Mock/main/T${t}L.mp3" type="audio/mpeg">
         </audio>
-        <span id="audio-fallback-${tk}" style="display:none;align-items:center;gap:6px;flex:1;">
-          <span style="font-size:12px;color:#c0392b;font-weight:700;">⚠ Cannot stream —</span>
-          <a href="${audioUrl}" target="_blank" rel="noopener" style="font-size:13px;font-weight:700;color:#6d28d9;">🎵 Open audio in browser</a>
-        </span>
         <a href="${audioUrl}" style="font-size:12px;font-weight:700;color:#6d28d9;text-decoration:none;white-space:nowrap;padding:6px 12px;background:#ede9fe;border-radius:50px;" target="_blank" rel="noopener">⬇ Download MP3</a>
       </div>` : '';
 
@@ -711,6 +778,20 @@ TESTS.forEach(t => {
                 allowfullscreen>
               </iframe>
             </div>
+            <div class="notes-panel">
+              <button class="notes-toggle" onclick="toggleNotes(this)" aria-expanded="false">
+                <em class="arrow">▶</em> 📝 My Notes
+              </button>
+              <div class="notes-body">
+                <textarea class="notes-textarea" id="notes-${tk}"
+                  placeholder="Jot down vocab, tricky questions, or anything you want to remember…"
+                  oninput="saveNote('${tk}', this.value)"></textarea>
+                <div class="notes-toolbar">
+                  <span class="notes-saved" id="notes-saved-${tk}">✓ Saved</span>
+                  <button class="notes-clear" onclick="clearNote('${tk}')">✕ Clear</button>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="answer-pane">
             <div class="answer-header">
@@ -729,21 +810,51 @@ TESTS.forEach(t => {
         </div>
       </div>
     </div>`;
+  
   });
 
   panel.innerHTML = navHtml + sectionsHtml;
   document.querySelector('body').appendChild(panel);
 
-  // Set audio src after DOM insertion — must happen after appendChild
-  setTimeout(() => {
-    const audioEl = document.getElementById('audio-T' + t + 'L');
-    if (audioEl) {
-      audioEl.setAttribute('src', BASE + 'T' + t + 'L.mp3');
-    }
-  }, 0);
 
   // Init section state
   currentSection[t] = 'L';
+});
+</script>
+
+
+<script>
+function toggleNotes(btn) {
+  const body = btn.nextElementSibling;
+  const isOpen = body.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+  btn.setAttribute('aria-expanded', isOpen);
+}
+
+function saveNote(tk, val) {
+  try { localStorage.setItem('note_' + tk, val); } catch(e) {}
+  const saved = document.getElementById('notes-saved-' + tk);
+  if (saved) {
+    saved.classList.add('show');
+    clearTimeout(saved._t);
+    saved._t = setTimeout(() => saved.classList.remove('show'), 1800);
+  }
+}
+
+function clearNote(tk) {
+  const ta = document.getElementById('notes-' + tk);
+  if (ta) { ta.value = ''; saveNote(tk, ''); }
+}
+
+// Restore saved notes on load
+window.addEventListener('load', () => {
+  ['T1L','T1FM','T1R','T2L','T2FM','T2R','T3L','T3FM','T3R'].forEach(tk => {
+    try {
+      const saved = localStorage.getItem('note_' + tk);
+      const ta = document.getElementById('notes-' + tk);
+      if (saved && ta) ta.value = saved;
+    } catch(e) {}
+  });
 });
 </script>
 
