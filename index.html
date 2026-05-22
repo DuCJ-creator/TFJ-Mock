@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shirley's TOEFL Junior Mock Tests Practice Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --coral: #FF6B6B;
+    --coral-light: #FFE5E5;
+    --teal: #4ECDC4;
+    --teal-light: #E0FAF8;
+    --purple: #A78BFA;
+    --purple-light: #EDE9FE;
+    --gold: #FFD93D;
+    --gold-light: #FFFBE6;
+    --green: #6BCB77;
+    --green-light: #E6F9E8;
+    --sky: #4D96FF;
+    --sky-light: #E6F0FF;
+    --bg: #FFF8F0;
+    --card: #FFFFFF;
+    --text: #2D2D2D;
+    --muted: #888;
+    --radius: 18px;
+    --radius-sm: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    background: linear-gradient(135deg, #FF6B6B 0%, #A78BFA 50%, #4ECDC4 100%);
+    padding: 28px 24px 22px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .site-header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 60%),
+                radial-gradient(circle at 80% 30%, rgba(255,255,255,0.12) 0%, transparent 50%);
+  }
+  .site-header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(22px, 4vw, 38px);
+    color: #fff;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    position: relative;
+  }
+  .site-header p {
+    color: rgba(255,255,255,0.9);
+    font-size: 14px;
+    margin-top: 4px;
+    position: relative;
+    font-weight: 600;
+  }
+  .stars {
+    font-size: 20px;
+    letter-spacing: 4px;
+    position: relative;
+  }
+
+  /* ── TEST TABS ── */
+  .tab-nav {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 20px 16px 0;
+    flex-wrap: wrap;
+  }
+  .tab-btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: 17px;
+    padding: 12px 28px;
+    border-radius: 50px;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    background: var(--card);
+    color: var(--muted);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+  .tab-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+  .tab-btn.active-t1 { background: var(--coral); color: #fff; border-color: #e84444; box-shadow: 0 4px 16px rgba(255,107,107,0.4); }
+  .tab-btn.active-t2 { background: var(--purple); color: #fff; border-color: #7c5ce8; box-shadow: 0 4px 16px rgba(167,139,250,0.4); }
+  .tab-btn.active-t3 { background: var(--teal); color: #fff; border-color: #2bb5ad; box-shadow: 0 4px 16px rgba(78,205,196,0.4); }
+
+  /* ── TEST PANEL ── */
+  .test-panel { display: none; padding: 20px 16px 40px; max-width: 1400px; margin: 0 auto; }
+  .test-panel.active { display: block; }
+
+  /* ── SECTION TABS (L / FM / R) ── */
+  .section-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 3px solid #eee;
+    padding-bottom: 0;
+    flex-wrap: wrap;
+  }
+  .sec-btn {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    padding: 10px 22px;
+    border-radius: 12px 12px 0 0;
+    border: none;
+    cursor: pointer;
+    background: #f0ece8;
+    color: #999;
+    transition: all 0.2s;
+    margin-bottom: -3px;
+    border-bottom: 3px solid transparent;
+  }
+  .sec-btn:hover { background: #e8e4ef; color: #555; }
+  .sec-btn.active { color: #fff; border-bottom: 3px solid transparent; }
+  .sec-btn.s-l.active { background: var(--sky); }
+  .sec-btn.s-fm.active { background: var(--gold); color: #5a4500; }
+  .sec-btn.s-r.active { background: var(--green); }
+
+  /* ── SECTION CONTENT ── */
+  .section-content { display: none; }
+  .section-content.active { display: block; }
+
+  /* ── SECTION CARD ── */
+  .section-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 2px solid #f4f4f4;
+    flex-wrap: wrap;
+  }
+  .section-badge {
+    font-family: 'Fredoka One', cursive;
+    font-size: 15px;
+    padding: 6px 16px;
+    border-radius: 50px;
+    color: #fff;
+  }
+  .badge-l { background: var(--sky); }
+  .badge-fm { background: var(--gold); color: #5a4500; }
+  .badge-r { background: var(--green); }
+
+  .section-header h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 20px;
+    color: var(--text);
+    flex: 1;
+  }
+  .resource-links { display: flex; gap: 8px; flex-wrap: wrap; }
+  .res-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .res-link:hover { transform: translateY(-1px); opacity: 0.85; }
+  .res-pdf { background: var(--coral-light); color: #c0392b; }
+  .res-audio { background: var(--purple-light); color: #6d28d9; }
+
+  /* ── MAIN WORKSPACE ── */
+  .workspace {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    min-height: 600px;
+  }
+  @media (max-width: 900px) {
+    .workspace { grid-template-columns: 1fr; }
+  }
+
+  /* ── AUDIO PLAYER ── */
+  .audio-bar {
+    background: linear-gradient(90deg, var(--purple-light), var(--sky-light));
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #ece9f6;
+  }
+  .audio-bar label { font-weight: 700; font-size: 13px; color: #6d28d9; white-space: nowrap; }
+  .audio-bar audio { flex: 1; height: 36px; }
+
+  /* ── PDF VIEWER ── */
+  .pdf-pane {
+    border-right: 2px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+  }
+  .pdf-embed-wrap {
+    flex: 1;
+    min-height: 560px;
+    padding: 12px;
+    background: #f7f5f0;
+  }
+  .pdf-embed-wrap iframe {
+    width: 100%;
+    height: 560px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  .pdf-embed-wrap .pdf-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 560px;
+    background: #fff;
+    border-radius: 10px;
+    gap: 12px;
+  }
+  .pdf-fallback-icon { font-size: 56px; }
+  .pdf-fallback a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background: var(--coral);
+    color: #fff;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    transition: opacity 0.2s;
+  }
+  .pdf-fallback a:hover { opacity: 0.85; }
+  .pdf-fallback p { color: #888; font-size: 13px; }
+
+  /* ── ANSWER SHEET ── */
+  .answer-pane {
+    display: flex;
+    flex-direction: column;
+    background: #fafafa;
+  }
+  .answer-header {
+    padding: 14px 16px 10px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 17px;
+    color: #444;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .q-count-badge {
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--teal-light);
+    color: #0b8f87;
+    padding: 3px 10px;
+    border-radius: 50px;
+  }
+  .answer-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px;
+    max-height: 560px;
+  }
+  .q-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding: 8px 10px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1.5px solid #eee;
+    transition: border-color 0.15s;
+  }
+  .q-row:hover { border-color: var(--purple); }
+  .q-num {
+    font-weight: 800;
+    font-size: 13px;
+    color: #888;
+    min-width: 24px;
+    text-align: right;
+  }
+  .options {
+    display: flex;
+    gap: 5px;
+    flex-wrap: nowrap;
+  }
+  .opt-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #ddd;
+    font-weight: 800;
+    font-size: 13px;
+    color: #999;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .opt-label:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-light); }
+  .opt-input { display: none; }
+  .opt-input:checked + .opt-label {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(167,139,250,0.4);
+  }
+
+  /* ── SUBMIT BUTTON ── */
+  .submit-area {
+    padding: 14px 16px;
+    border-top: 2px solid #eee;
+    background: #fff;
+  }
+  .submit-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'Fredoka One', cursive;
+    font-size: 18px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.18); }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn-l { background: linear-gradient(135deg, var(--sky), #2176ff); }
+  .submit-btn-fm { background: linear-gradient(135deg, var(--gold), #f39c12); }
+  .submit-btn-r { background: linear-gradient(135deg, var(--green), #27ae60); }
+
+  /* ── RESULTS OVERLAY ── */
+  .results-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(30,20,50,0.55);
+    z-index: 1000;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 30px 16px;
+    overflow-y: auto;
+  }
+  .results-overlay.open { display: flex; }
+  .results-box {
+    background: #fff;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 680px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+    animation: popIn 0.3s ease;
+  }
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.93) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .results-header {
+    padding: 28px 28px 20px;
+    text-align: center;
+  }
+  .score-circle {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+  }
+  .score-num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 32px;
+    line-height: 1;
+  }
+  .score-total { font-size: 13px; font-weight: 700; opacity: 0.8; }
+  .results-header h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 22px;
+    margin-bottom: 4px;
+  }
+  .results-header p { color: #888; font-size: 14px; }
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    padding: 0 24px 24px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .res-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 6px;
+    border-radius: 12px;
+    border: 2px solid #eee;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .res-item.correct { background: var(--green-light); border-color: var(--green); }
+  .res-item.wrong { background: #FFEBE8; border-color: var(--coral); }
+  .res-item.unanswered { background: #f4f4f4; border-color: #ddd; }
+  .res-qnum { color: #888; font-size: 11px; }
+  .res-your { font-size: 14px; }
+  .res-correct-ans { font-size: 11px; }
+  .res-item.correct .res-your { color: var(--green); }
+  .res-item.wrong .res-your { color: var(--coral); }
+  .results-footer {
+    padding: 16px 24px 24px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    border-top: 2px solid #f0f0f0;
+  }
+  .btn-retry, .btn-close {
+    padding: 12px 28px;
+    border-radius: 50px;
+    border: none;
+    font-family: 'Fredoka One', cursive;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-retry { background: var(--purple); color: #fff; }
+  .btn-close { background: #f0f0f0; color: #555; }
+  .btn-retry:hover, .btn-close:hover { transform: translateY(-2px); }
+
+  /* ── LOADING SPINNER ── */
+  .loading-msg {
+    display: none;
+    text-align: center;
+    padding: 20px;
+    font-weight: 700;
+    color: var(--purple);
+    font-size: 15px;
+  }
+  .loading-msg.show { display: block; }
+
+  /* ── CONFETTI EMOJI ── */
+  .emoji-row {
+    font-size: 28px;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+  }
+
+  /* ── SCROLLBAR STYLE ── */
+  .answer-scroll::-webkit-scrollbar { width: 6px; }
+  .answer-scroll::-webkit-scrollbar-track { background: #f0f0f0; border-radius: 3px; }
+  .answer-scroll::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="stars">⭐ ⭐ ⭐</div>
+  <h1>Shirley's TOEFL Junior Mock Tests Practice Platform</h1>
+  <p>Choose your mock test and start practicing! Good luck! 🎉</p>
+</header>
+
+<!-- TEST TABS -->
+<nav class="tab-nav" role="tablist">
+  <button class="tab-btn active-t1" onclick="switchTest(1)" id="tab1" role="tab" aria-selected="true">📝 Mock Test 1</button>
+  <button class="tab-btn" onclick="switchTest(2)" id="tab2" role="tab" aria-selected="false">📝 Mock Test 2</button>
+  <button class="tab-btn" onclick="switchTest(3)" id="tab3" role="tab" aria-selected="false">📝 Mock Test 3</button>
+</nav>
+
+<!-- TESTS 1, 2, 3 -->
+<script>
+// Config
+const BASE = 'https://ducj-creator.github.io/TFJ-Mock/';
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRmOmHkJS-tO9hcndcsydECVOxtyw4Phm03-kfV_m39psHsHdI1f6oNWZrfoA3zvPNSF7fh0SXaiZt0/pub?gid=0&single=true&output=csv';
+
+const SECTIONS = [
+  { key: 'L',  label: 'Listening',                  badge: 'badge-l',  btnClass: 's-l',  submitClass: 'submit-btn-l',  hasAudio: true,  maxQ: 45 },
+  { key: 'FM', label: 'Language Form & Meaning',     badge: 'badge-fm', btnClass: 's-fm', submitClass: 'submit-btn-fm', hasAudio: false, maxQ: 42 },
+  { key: 'R',  label: 'Reading Comprehension',       badge: 'badge-r',  btnClass: 's-r',  submitClass: 'submit-btn-r',  hasAudio: false, maxQ: 42 },
+];
+
+let answerKeys = {}; // loaded once from CSV
+let userAnswers = {}; // {T1L: {1:'A', 2:'B', ...}, ...}
+
+// State
+let currentTest = 1;
+let currentSection = {}; // {1: 'L', 2: 'L', 3: 'L'}
+
+function testKey(t, s) { return `T${t}${s}`; }
+
+function switchTest(t) {
+  currentTest = t;
+  document.querySelectorAll('.test-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-t${t}`).classList.add('active');
+
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.className = 'tab-btn';
+    b.setAttribute('aria-selected', 'false');
+  });
+  const activeClasses = ['active-t1','active-t2','active-t3'];
+  document.getElementById(`tab${t}`).classList.add(activeClasses[t-1]);
+  document.getElementById(`tab${t}`).setAttribute('aria-selected', 'true');
+}
+
+function switchSection(t, sec) {
+  currentSection[t] = sec;
+  const panel = document.getElementById(`panel-t${t}`);
+  panel.querySelectorAll('.section-content').forEach(c => c.classList.remove('active'));
+  panel.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`sec-${t}-${sec}`).classList.add('active');
+  document.querySelector(`#tab-${t}-${sec}`).classList.add('active');
+}
+
+// Load CSV answer keys once
+async function loadAnswerKeys() {
+  try {
+    const resp = await fetch(CSV_URL);
+    const text = await resp.text();
+    const rows = text.trim().split('\n');
+    const headers = rows[0].split(',').map(h => h.trim().replace(/\r/g,''));
+    // headers: No, T1L, T1FM, T1R, T2L, T2FM, T2R, T3L, T3FM, T3R (or similar)
+    // Build: answerKeys['T1L'] = {1:'A', 2:'C', ...}
+    const colKeys = headers.slice(1); // skip 'No'
+    colKeys.forEach(k => { answerKeys[k] = {}; });
+    for (let i = 1; i < rows.length; i++) {
+      const cells = rows[i].split(',').map(c => c.trim().replace(/\r/g,''));
+      if (!cells[0]) continue;
+      const qNum = parseInt(cells[0]);
+      if (isNaN(qNum)) continue;
+      colKeys.forEach((k, ci) => {
+        const ans = (cells[ci+1] || '').toUpperCase();
+        if (ans) answerKeys[k][qNum] = ans;
+      });
+    }
+  } catch(e) {
+    console.warn('Could not load answer keys:', e);
+  }
+}
+loadAnswerKeys();
+
+function recordAnswer(tk, q, opt) {
+  if (!userAnswers[tk]) userAnswers[tk] = {};
+  userAnswers[tk][q] = opt;
+}
+
+function getMaxQ(tk) {
+  // Use answer key count if available, else section default
+  const keys = Object.keys(answerKeys[tk] || {});
+  if (keys.length > 0) return Math.max(...keys.map(Number));
+  const sec = SECTIONS.find(s => tk.endsWith(s.key));
+  return sec ? sec.maxQ : 42;
+}
+
+function submitSection(tk) {
+  const maxQ = getMaxQ(tk);
+  const ua = userAnswers[tk] || {};
+  const ak = answerKeys[tk] || {};
+  const hasKeys = Object.keys(ak).length > 0;
+
+  let correct = 0, wrong = 0, unanswered = 0;
+  const items = [];
+
+  for (let q = 1; q <= maxQ; q++) {
+    const yours = ua[q] || '';
+    const ans = ak[q] || '';
+    let status = 'unanswered';
+    if (!yours) { unanswered++; status = 'unanswered'; }
+    else if (!hasKeys) { status = 'unanswered'; }  // no key loaded
+    else if (yours === ans) { correct++; status = 'correct'; }
+    else { wrong++; status = 'wrong'; }
+    items.push({ q, yours, ans, status });
+  }
+
+  // Build results overlay
+  const pct = hasKeys ? Math.round(correct / maxQ * 100) : null;
+  const scoreColor = pct === null ? '#888' : pct >= 80 ? '#6BCB77' : pct >= 60 ? '#FFD93D' : '#FF6B6B';
+  const emoji = pct === null ? '📋' : pct >= 80 ? '🏆' : pct >= 60 ? '👍' : '💪';
+  const msg = pct === null ? 'Submitted! (Answer key loading...)' :
+              pct >= 80 ? 'Excellent work!' : pct >= 60 ? 'Good job! Keep it up!' : 'Keep practicing!';
+
+  const overlay = document.getElementById('results-overlay');
+  document.getElementById('res-emoji').textContent = emoji;
+  document.getElementById('res-score-circle').style.background = scoreColor + '22';
+  document.getElementById('res-score-circle').style.border = `4px solid ${scoreColor}`;
+  document.getElementById('res-score-num').textContent = hasKeys ? correct : '?';
+  document.getElementById('res-score-num').style.color = scoreColor;
+  document.getElementById('res-score-total').textContent = `/ ${maxQ}`;
+  document.getElementById('res-title').textContent = msg;
+  document.getElementById('res-subtitle').textContent = hasKeys
+    ? `${correct} correct · ${wrong} wrong · ${unanswered} skipped`
+    : 'Answer key loaded. Check your answers below.';
+
+  const grid = document.getElementById('res-grid');
+  grid.innerHTML = '';
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = `res-item ${item.status}`;
+    div.innerHTML = `<span class="res-qnum">Q${item.q}</span>
+      <span class="res-your">${item.yours || '–'}</span>
+      ${hasKeys && item.ans ? `<span class="res-correct-ans" style="color:${item.status==='correct'?'#27ae60':'#e74c3c'}">${item.status==='correct'?'✓':item.ans}</span>` : ''}`;
+    grid.appendChild(div);
+  });
+
+  document.getElementById('res-retry-btn').onclick = () => {
+    overlay.classList.remove('open');
+    // Clear answers for this section
+    userAnswers[tk] = {};
+    const panel = document.getElementById(`panel-t${currentTest}`);
+    panel.querySelectorAll(`[data-tk="${tk}"] input[type=radio]`).forEach(r => r.checked = false);
+  };
+
+  overlay.classList.add('open');
+  overlay.scrollTop = 0;
+}
+
+function closeResults() {
+  document.getElementById('results-overlay').classList.remove('open');
+}
+</script>
+
+<!-- RESULTS OVERLAY -->
+<div class="results-overlay" id="results-overlay" role="dialog" aria-modal="true">
+  <div class="results-box">
+    <div class="results-header">
+      <div class="emoji-row" id="res-emoji">🏆</div>
+      <div class="score-circle" id="res-score-circle">
+        <span class="score-num" id="res-score-num">0</span>
+        <span class="score-total" id="res-score-total">/42</span>
+      </div>
+      <h3 id="res-title">Great work!</h3>
+      <p id="res-subtitle"></p>
+    </div>
+    <div class="results-grid" id="res-grid"></div>
+    <div class="results-footer">
+      <button class="btn-retry" id="res-retry-btn">🔄 Retry Section</button>
+      <button class="btn-close" onclick="closeResults()">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Generate test panels dynamically
+const TESTS = [1, 2, 3];
+const container = document.querySelector('body');
+
+TESTS.forEach(t => {
+  const panel = document.createElement('div');
+  panel.className = `test-panel${t===1?' active':''}`;
+  panel.id = `panel-t${t}`;
+
+  // Section nav
+  let navHtml = `<div class="section-nav" role="tablist">`;
+  SECTIONS.forEach(s => {
+    const isFirst = s.key === 'L';
+    navHtml += `<button class="sec-btn ${s.btnClass}${isFirst?' active':''}" 
+      id="tab-${t}-${s.key}" role="tab" aria-selected="${isFirst?'true':'false'}"
+      onclick="switchSection(${t}, '${s.key}')">
+      ${s.key==='L'?'🎧':s.key==='FM'?'📖':'📚'} ${s.label}
+    </button>`;
+  });
+  navHtml += `</div>`;
+
+  // Section contents
+  let sectionsHtml = '';
+  SECTIONS.forEach((s, si) => {
+    const tk = `T${t}${s.key}`;
+    const pdfUrl = `${BASE}${tk}.pdf`;
+    const audioUrl = `${BASE}T${t}L.mp3`;
+
+    const audioBar = s.hasAudio ? `
+      <div class="audio-bar">
+        <label>🎧 Audio:</label>
+        <audio controls src="${audioUrl}" preload="none">
+          Your browser does not support audio.
+        </audio>
+        <a href="${audioUrl}" style="font-size:12px;font-weight:700;color:#6d28d9;text-decoration:none;white-space:nowrap;" target="_blank" rel="noopener">⬇ Download</a>
+      </div>` : '';
+
+    // Build answer rows
+    const maxQ = s.key === 'L' ? 45 : 42;
+    let ansRows = '';
+    for (let q = 1; q <= maxQ; q++) {
+      let opts = '';
+      ['A','B','C','D'].forEach(opt => {
+        opts += `<input type="radio" name="${tk}-q${q}" id="${tk}-q${q}-${opt}" class="opt-input"
+          value="${opt}" onchange="recordAnswer('${tk}', ${q}, '${opt}')">
+          <label for="${tk}-q${q}-${opt}" class="opt-label">${opt}</label>`;
+      });
+      ansRows += `<div class="q-row"><span class="q-num">${q}</span><div class="options">${opts}</div></div>`;
+    }
+
+    sectionsHtml += `
+    <div class="section-content${si===0?' active':''}" id="sec-${t}-${s.key}" data-tk="${tk}">
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-badge ${s.badge}">${s.key}</span>
+          <h2>${s.label}</h2>
+          <div class="resource-links">
+            <a class="res-link res-pdf" href="${pdfUrl}" target="_blank" rel="noopener">📄 Open PDF</a>
+            ${s.hasAudio ? `<a class="res-link res-audio" href="${audioUrl}" target="_blank" rel="noopener">🎵 Audio File</a>` : ''}
+          </div>
+        </div>
+        ${audioBar}
+        <div class="workspace">
+          <div class="pdf-pane">
+            <div class="pdf-embed-wrap">
+              <div class="pdf-fallback">
+                <span class="pdf-fallback-icon">📄</span>
+                <p>Click below to open the test PDF</p>
+                <a href="${pdfUrl}" target="_blank" rel="noopener">📄 Open ${tk}.pdf</a>
+                <p style="margin-top:8px;font-size:12px;">(Opens in new tab — keep it open beside this page)</p>
+              </div>
+            </div>
+          </div>
+          <div class="answer-pane">
+            <div class="answer-header">
+              Answer Sheet
+              <span class="q-count-badge">${maxQ} Questions</span>
+            </div>
+            <div class="answer-scroll" id="scroll-${tk}">
+              ${ansRows}
+            </div>
+            <div class="submit-area">
+              <button class="submit-btn ${s.submitClass}" onclick="submitSection('${tk}')">
+                ✅ Submit Answers
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  panel.innerHTML = navHtml + sectionsHtml;
+  document.querySelector('body').appendChild(panel);
+
+  // Init section state
+  currentSection[t] = 'L';
+});
+</script>
+
+</body>
+</html>
