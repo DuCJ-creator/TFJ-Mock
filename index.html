@@ -220,32 +220,6 @@
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
-  .pdf-embed-wrap .pdf-fallback {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 560px;
-    background: #fff;
-    border-radius: 10px;
-    gap: 12px;
-  }
-  .pdf-fallback-icon { font-size: 56px; }
-  .pdf-fallback a {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: var(--coral);
-    color: #fff;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 15px;
-    transition: opacity 0.2s;
-  }
-  .pdf-fallback a:hover { opacity: 0.85; }
-  .pdf-fallback p { color: #888; font-size: 13px; }
 
   /* ── ANSWER SHEET ── */
   .answer-pane {
@@ -692,7 +666,7 @@ TESTS.forEach(t => {
     const audioBar = s.hasAudio ? `
       <div class="audio-bar">
         <label>🎧 Audio:</label>
-        <audio controls src="${audioUrl}" preload="none">
+        <audio id="audio-${tk}" controls preload="none" style="flex:1;height:36px;">
           Your browser does not support audio.
         </audio>
         <a href="${audioUrl}" style="font-size:12px;font-weight:700;color:#6d28d9;text-decoration:none;white-space:nowrap;" target="_blank" rel="noopener">⬇ Download</a>
@@ -718,7 +692,7 @@ TESTS.forEach(t => {
           <span class="section-badge ${s.badge}">${s.key}</span>
           <h2>${s.label}</h2>
           <div class="resource-links">
-            <a class="res-link res-pdf" href="${pdfUrl}" target="_blank" rel="noopener">📄 Open PDF</a>
+            <a class="res-link res-pdf" href="${pdfUrl}" target="_blank" rel="noopener">📄 Open in New Tab</a>
             ${s.hasAudio ? `<a class="res-link res-audio" href="${audioUrl}" target="_blank" rel="noopener">🎵 Audio File</a>` : ''}
           </div>
         </div>
@@ -726,12 +700,12 @@ TESTS.forEach(t => {
         <div class="workspace">
           <div class="pdf-pane">
             <div class="pdf-embed-wrap">
-              <div class="pdf-fallback">
-                <span class="pdf-fallback-icon">📄</span>
-                <p>Click below to open the test PDF</p>
-                <a href="${pdfUrl}" target="_blank" rel="noopener">📄 Open ${tk}.pdf</a>
-                <p style="margin-top:8px;font-size:12px;">(Opens in new tab — keep it open beside this page)</p>
-              </div>
+              <iframe
+                src="https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true"
+                title="${tk} PDF"
+                loading="lazy"
+                allowfullscreen>
+              </iframe>
             </div>
           </div>
           <div class="answer-pane">
@@ -755,6 +729,13 @@ TESTS.forEach(t => {
 
   panel.innerHTML = navHtml + sectionsHtml;
   document.querySelector('body').appendChild(panel);
+
+  // Set audio src via JS after DOM insertion so browser loads it properly
+  const audioEl = document.getElementById(`audio-T${t}L`);
+  if (audioEl) {
+    audioEl.src = `${BASE}T${t}L.mp3`;
+    audioEl.load();
+  }
 
   // Init section state
   currentSection[t] = 'L';
