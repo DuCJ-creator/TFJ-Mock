@@ -555,6 +555,56 @@ let currentSection = {}; // {1: 'L', 2: 'L', 3: 'L'}
 
 function testKey(t, s) { return `T${t}${s}`; }
 
+function setupAudioElement(tk, audioUrl) {
+  const audio = document.getElementById('audio-' + tk);
+  if (!audio) {
+    console.warn('Audio element not found: audio-' + tk);
+    return;
+  }
+
+  // GitHub Pages serves MP3 files correctly, but Safari/iPad and some
+  // embedded browsers are more reliable when a typed <source> is present
+  // before calling load().
+  audio.preload = 'metadata';
+  audio.crossOrigin = 'anonymous';
+
+  let source = audio.querySelector('source');
+  if (!source) {
+    source = document.createElement('source');
+    audio.appendChild(source);
+  }
+  source.src = audioUrl;
+  source.type = 'audio/mpeg';
+
+  // Also set audio.src as a fallback for browsers that do not refresh
+  // dynamically-created <source> children consistently.
+  audio.src = audioUrl;
+  audio.load();
+
+  const status = document.getElementById('audio-status-' + tk);
+  if (status) {
+    status.textContent = '';
+    status.style.display = 'none';
+  }
+
+  audio.addEventListener('canplay', () => {
+    if (status) {
+      status.textContent = 'Ready';
+      status.style.display = 'inline';
+    }
+  }, { once: true });
+
+  audio.addEventListener('error', () => {
+    const code = audio.error ? audio.error.code : 'unknown';
+    console.warn('Audio failed to load:', tk, audioUrl, 'error code:', code);
+    if (status) {
+      status.textContent = 'Audio could not load. Use “Open MP3” or “Download MP3”.';
+      status.style.display = 'inline';
+    }
+  });
+}
+
+
 function switchTest(t) {
   currentTest = t;
   document.querySelectorAll('.test-panel').forEach(p => p.classList.remove('active'));
@@ -737,8 +787,13 @@ TESTS.forEach(t => {
     const audioBar = s.hasAudio ? `
       <div class="audio-bar">
         <label>🎧 Audio:</label>
-        <audio id="audio-${tk}" controls style="flex:1;height:36px;"></audio>
-        <a href="${audioUrl}" style="font-size:12px;font-weight:700;color:#6d28d9;text-decoration:none;white-space:nowrap;padding:6px 12px;background:#ede9fe;border-radius:50px;" target="_blank" rel="noopener">⬇ Download MP3</a>
+        <audio id="audio-${tk}" controls preload="metadata" crossorigin="anonymous" style="flex:1;height:36px;">
+          <source src="${audioUrl}" type="audio/mpeg">
+          Your browser does not support MP3 audio.
+        </audio>
+        <span id="audio-status-${tk}" style="display:none;font-size:12px;font-weight:700;color:#6d28d9;white-space:nowrap;"></span>
+        <a href="${audioUrl}" style="font-size:12px;font-weight:700;color:#6d28d9;text-decoration:none;white-space:nowrap;padding:6px 12px;background:#ede9fe;border-radius:50px;" target="_blank" rel="noopener">🎵 Open MP3</a>
+        <a href="${audioUrl}" style="font-size:12px;font-weight:700;color:#6d28d9;text-decoration:none;white-space:nowrap;padding:6px 12px;background:#ede9fe;border-radius:50px;" download>⬇ Download MP3</a>
       </div>` : '';
 
     // Build answer rows
@@ -825,15 +880,9 @@ TESTS.forEach(t => {
   panel.innerHTML = navHtml + sectionsHtml;
   document.querySelector('body').appendChild(panel);
 
-  // Set audio src - must happen after appendChild, using direct .src assignment + .load()
+  // Set audio src after appendChild for dynamically-created audio controls.
   const audioTk = 'T' + t + 'L';
-  const audioEl = document.getElementById('audio-' + audioTk);
-  if (audioEl) {
-    audioEl.setAttribute('src', 'https://ducj-creator.github.io/TFJ-Mock/' + audioTk + '.mp3');
-    audioEl.load();
-  } else {
-    console.warn('Audio element not found: audio-' + audioTk);
-  }
+  setupAudioElement(audioTk, `${BASE}${audioTk}.mp3`);
 
   // Init section state
   currentSection[t] = 'L';
