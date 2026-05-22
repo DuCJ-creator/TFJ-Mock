@@ -737,8 +737,8 @@ TESTS.forEach(t => {
     const audioBar = s.hasAudio ? `
       <div class="audio-bar">
         <label>🎧 Audio:</label>
-        <audio controls preload="auto" crossorigin="anonymous" style="flex:1;height:36px;">
-          <source src="${audioUrl}" type="audio/mpeg">
+        <audio id="audio-${tk}" controls style="flex:1;height:36px;">
+          <source src="" type="audio/mpeg">
         </audio>
         <a href="${audioUrl}" style="font-size:12px;font-weight:700;color:#6d28d9;text-decoration:none;white-space:nowrap;padding:6px 12px;background:#ede9fe;border-radius:50px;" target="_blank" rel="noopener">⬇ Download MP3</a>
       </div>` : '';
@@ -827,6 +827,12 @@ TESTS.forEach(t => {
   panel.innerHTML = navHtml + sectionsHtml;
   document.querySelector('body').appendChild(panel);
 
+  // Set audio src exactly like the working CAP html: direct .src + .load()
+  const audioEl = document.getElementById('audio-T' + t + 'L');
+  if (audioEl) {
+    audioEl.src = 'https://ducj-creator.github.io/TFJ-Mock/T' + t + 'L.mp3';
+    audioEl.load();
+  }
 
   // Init section state
   currentSection[t] = 'L';
