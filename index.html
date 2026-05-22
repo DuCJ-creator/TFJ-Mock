@@ -555,53 +555,78 @@ let currentSection = {}; // {1: 'L', 2: 'L', 3: 'L'}
 
 function testKey(t, s) { return `T${t}${s}`; }
 
-function setupAudioElement(tk, audioUrl) {
+function getAudioUrls(tk) {
+  // Primary URL: GitHub Pages. Fallbacks: raw GitHub URLs.
+  // Do NOT set crossorigin on <audio>; some browsers fail media loading
+  // when CORS headers are missing or inconsistent.
+  return [
+    `${BASE}${tk}.mp3`,
+    `https://raw.githubusercontent.com/ducj-creator/TFJ-Mock/main/${tk}.mp3`,
+    `https://raw.githubusercontent.com/ducj-creator/TFJ-Mock/master/${tk}.mp3`
+  ];
+}
+
+function setupAudioElement(tk) {
   const audio = document.getElementById('audio-' + tk);
   if (!audio) {
     console.warn('Audio element not found: audio-' + tk);
     return;
   }
 
-  // GitHub Pages serves MP3 files correctly, but Safari/iPad and some
-  // embedded browsers are more reliable when a typed <source> is present
-  // before calling load().
-  audio.preload = 'metadata';
-  audio.crossOrigin = 'anonymous';
-
-  let source = audio.querySelector('source');
-  if (!source) {
-    source = document.createElement('source');
-    audio.appendChild(source);
-  }
-  source.src = audioUrl;
-  source.type = 'audio/mpeg';
-
-  // Also set audio.src as a fallback for browsers that do not refresh
-  // dynamically-created <source> children consistently.
-  audio.src = audioUrl;
-  audio.load();
-
+  const urls = getAudioUrls(tk);
   const status = document.getElementById('audio-status-' + tk);
-  if (status) {
-    status.textContent = '';
-    status.style.display = 'none';
+  let index = 0;
+
+  function setStatus(text) {
+    if (!status) return;
+    status.textContent = text || '';
+    status.style.display = text ? 'inline' : 'none';
   }
+
+  function loadUrl(i) {
+    index = i;
+    const url = urls[index];
+    if (!url) {
+      setStatus('Audio could not load. Please use “Open MP3” below.');
+      return;
+    }
+
+    // Reset all children/sources, then assign src directly. This is the
+    // most reliable pattern for dynamically-created audio controls.
+    audio.pause();
+    audio.removeAttribute('src');
+    while (audio.firstChild) audio.removeChild(audio.firstChild);
+
+    const source = document.createElement('source');
+    source.src = url;
+    source.type = 'audio/mpeg';
+    audio.appendChild(source);
+
+    audio.preload = 'metadata';
+    audio.src = url;
+    audio.load();
+    setStatus(index === 0 ? '' : 'Trying backup audio source...');
+  }
+
+  audio.addEventListener('loadedmetadata', () => {
+    setStatus('Ready');
+  });
 
   audio.addEventListener('canplay', () => {
-    if (status) {
-      status.textContent = 'Ready';
-      status.style.display = 'inline';
-    }
-  }, { once: true });
+    setStatus('Ready');
+  });
 
   audio.addEventListener('error', () => {
     const code = audio.error ? audio.error.code : 'unknown';
-    console.warn('Audio failed to load:', tk, audioUrl, 'error code:', code);
-    if (status) {
-      status.textContent = 'Audio could not load. Use “Open MP3” or “Download MP3”.';
-      status.style.display = 'inline';
+    console.warn('Audio failed to load:', tk, urls[index], 'error code:', code);
+    if (index + 1 < urls.length) {
+      loadUrl(index + 1);
+    } else {
+      setStatus('Audio could not load. Please use “Open MP3” below.');
     }
   });
+
+  loadUrl(0);
 }
 
 
@@ -787,7 +812,7 @@ TESTS.forEach(t => {
     const audioBar = s.hasAudio ? `
       <div class="audio-bar">
         <label>🎧 Audio:</label>
-        <audio id="audio-${tk}" controls preload="metadata" crossorigin="anonymous" style="flex:1;height:36px;">
+        <audio id="audio-${tk}" controls preload="metadata" style="flex:1;height:36px;">
           <source src="${audioUrl}" type="audio/mpeg">
           Your browser does not support MP3 audio.
         </audio>
@@ -882,7 +907,7 @@ TESTS.forEach(t => {
 
   // Set audio src after appendChild for dynamically-created audio controls.
   const audioTk = 'T' + t + 'L';
-  setupAudioElement(audioTk, `${BASE}${audioTk}.mp3`);
+  setupAudioElement(audioTk);
 
   // Init section state
   currentSection[t] = 'L';
